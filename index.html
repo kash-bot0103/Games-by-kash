@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Casino | Virtual Money</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">DEMO<span>CASINO</span></div>
+    
+    <div class="header-right">
+      <div class="balance-box">
+        <span class="balance-label">Balance</span>
+        <span id="balance">1,000.00</span>
+        <span class="currency">DEMO</span>
+      </div>
+      <button class="btn-reset" onclick="resetBalance()">Reset</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>Welcome to Demo Casino</h1>
+      <p>Play with virtual money • No real money involved</p>
+      <div class="demo-badge">DEMO MODE</div>
+    </section>
+
+    <!-- Games Grid -->
+    <section class="games-section">
+      <h2>Originals</h2>
+      <div class="games-grid">
+
+        <div class="game-card" onclick="alert('Crash coming soon!')">
+          <div class="game-icon">📈</div>
+          <h3>Crash</h3>
+          <p>Multiply your bet before it crashes</p>
+        </div>
+
+        <div class="game-card" onclick="alert('Dice coming soon!')">
+          <div class="game-icon">🎲</div>
+          <h3>Dice</h3>
+          <p>Roll under or over</p>
+        </div>
+
+        <div class="game-card" onclick="alert('Mines coming soon!')">
+          <div class="game-icon">💣</div>
+          <h3>Mines</h3>
+          <p>Find the gems, avoid the mines</p>
+        </div>
+
+        <div class="game-card" onclick="alert('Plinko coming soon!')">
+          <div class="game-icon">🔵</div>
+          <h3>Plinko</h3>
+          <p>Drop the ball and win</p>
+        </div>
+
+        <div class="game-card" onclick="alert('Blackjack coming soon!')">
+          <div class="game-icon">🃏</div>
+          <h3>Blackjack</h3>
+          <p>Beat the dealer to 21</p>
+        </div>
+
+        <div class="game-card" onclick="alert('Roulette coming soon!')">
+          <div class="game-icon">🎡</div>
+          <h3>Roulette</h3>
+          <p>European Roulette</p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
