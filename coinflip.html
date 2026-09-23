@@ -129,6 +129,7 @@
           balance += winAmount;
           saveBalance();
           resultText.innerText = `It's ${outcome.toUpperCase()}! You won ${winAmount.toFixed(2)} DEMO!`;
+           playSound('win')
           resultText.className = "result win";
         } else {
           resultText.innerText = `It's ${outcome.toUpperCase()}. You lost!`;
