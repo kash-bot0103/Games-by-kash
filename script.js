@@ -1,31 +1,23 @@
-// Virtual Money System
-const STARTING_BALANCE = 1000;
+// Shared balance system using localStorage
+let balance = parseFloat(localStorage.getItem('demoBalance')) || 1000.00;
 
-function getBalance() {
-  return parseFloat(localStorage.getItem('demoBalance')) || STARTING_BALANCE;
+function updateBalanceDisplay() {
+  const balanceEl = document.getElementById('balance');
+  if (balanceEl) {
+    balanceEl.innerText = balance.toFixed(2);
+  }
 }
 
-function setBalance(amount) {
-  localStorage.setItem('demoBalance', amount.toFixed(2));
+function saveBalance() {
+  localStorage.setItem('demoBalance', balance.toFixed(2));
   updateBalanceDisplay();
 }
 
-function updateBalanceDisplay() {
-  const balance = getBalance();
-  const balanceElement = document.getElementById('balance');
-  if (balanceElement) {
-    balanceElement.textContent = balance.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  }
-}
-
 function resetBalance() {
-  if (confirm('Reset your balance to 1,000 DEMO?')) {
-    setBalance(STARTING_BALANCE);
-  }
+  balance = 1000.00;
+  saveBalance();
+  alert('Balance reset to 1,000 DEMO!');
 }
 
-// Initialize when page loads
+// Update balance on page load
 updateBalanceDisplay();
