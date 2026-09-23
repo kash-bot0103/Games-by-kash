@@ -6,6 +6,122 @@
   <title>Demo Casino | Virtual Money</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Basic styling to make the game cards look good immediately */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #1e293b;
+      border-bottom: 1px solid #334155;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .logo span {
+      color: #3b82f6;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .balance-box {
+      background-color: #334155;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .currency {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 0.25rem;
+    }
+    .btn-reset {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .btn-reset:hover {
+      background-color: #dc2626;
+    }
+    .main {
+      flex: 1;
+      padding: 3rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .hero p {
+      color: #94a3b8;
+      font-size: 1.125rem;
+    }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      justify-content: center;
+    }
+    .game-card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      text-decoration: none;
+      color: white;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .game-card:hover {
+      transform: translateY(-4px);
+      border-color: #3b82f6;
+    }
+    .game-card h2 {
+      margin: 1rem 0 0.5rem 0;
+      font-size: 1.5rem;
+    }
+    .game-card p {
+      color: #94a3b8;
+      margin: 0;
+    }
+    .game-icon {
+      font-size: 3rem;
+    }
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: #64748b;
+      font-size: 0.875rem;
+      border-top: 1px solid #1e293b;
+    }
+  </style>
 </head>
 <body>
 
@@ -15,7 +131,7 @@
     
     <div class="header-right">
       <div class="balance-box">
-        <span class="balance-label">Balance</span>
+        <span class="balance-label">Balance: </span>
         <span id="balance">1,000.00</span>
         <span class="currency">DEMO</span>
       </div>
@@ -27,3 +143,38 @@
   <main class="main">
     
     <!-- Hero Section -->
+    <section class="hero">
+      <h1>Welcome to Demo Casino</h1>
+      <p>Choose a game below to start playing with virtual money!</p>
+    </section>
+
+    <!-- Games Grid -->
+    <section class="games-grid">
+      
+      <!-- Blackjack Card -->
+      <a href="blackjack.html" class="game-card">
+        <div class="game-icon">♠️</div>
+        <h2>Blackjack</h2>
+        <p>Beat the dealer to 21 without going over!</p>
+      </a>
+
+      <!-- Crash Card -->
+      <a href="crash.html" class="game-card">
+        <div class="game-icon">📈</div>
+        <h2>Crash</h2>
+        <p>Cash out before the multiplier crashes!</p>
+      </a>
+
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    &copy; 2026 Demo Casino. For entertainment purposes only. No real money is used.
+  </footer>
+
+  <!-- Link to your JavaScript file -->
+  <script src="script.js"></script>
+
+</body>
+</html>
