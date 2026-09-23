@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blackjack | Demo Casino</title>
+  <title>Blackjack | Princess Casino</title>
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #1e293b; border-bottom: 1px solid #334155; }
-    .logo { font-size: 1.5rem; font-weight: 700; } .logo span { color: #3b82f6; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: linear-gradient(90deg, #1e1b4b, #312e81); border-bottom: 2px solid #fbbf24; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #fbbf24; } .logo span { color: #ec4899; }
     .header-right { display: flex; align-items: center; gap: 1rem; }
-    .balance-box { background-color: #334155; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
-    .btn-reset { background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .balance-box { background-color: #1e293b; border: 1px solid #fbbf24; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
     .btn-back { background-color: #475569; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
     .main { flex: 1; padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
     .game-container { background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
@@ -28,15 +27,15 @@
 </head>
 <body>
   <header class="header">
-    <div class="logo">DEMO<span>CASINO</span></div>
+    <div class="logo">PRINCESS<span>CASINO</span></div>
     <div class="header-right">
       <a href="index.html" class="btn-back">Back</a>
-      <div class="balance-box">Balance: <span id="balance">1000.00</span> DEMO</div>
+      <div class="balance-box">Balance: <span id="balance">1000.00</span> GEMS</div>
     </div>
   </header>
 
   <main class="main">
-    <h1>️ Blackjack</h1>
+    <h1>♠️ Blackjack</h1>
     <div class="game-container">
       <div class="controls">
         <div class="control-group">
@@ -44,15 +43,11 @@
           <input type="number" id="betAmount" value="10" min="1">
         </div>
       </div>
-
       <div class="cards" id="dealerCards"></div>
       <h3>Dealer</h3>
-      
       <div class="cards" id="playerCards"></div>
       <h3>You</h3>
-
       <div class="status" id="status">Place your bet and press Deal</div>
-
       <div>
         <button class="btn-action" id="dealBtn" onclick="deal()">Deal</button>
         <button class="btn-action" id="hitBtn" onclick="hit()" disabled>Hit</button>
@@ -62,34 +57,28 @@
   </main>
 
   <script>
-    let balance = parseFloat(localStorage.getItem('demoBalance')) || 1000.00;
-    let deck = [];
-    let playerHand = [];
-    let dealerHand = [];
-    let currentBet = 0;
-    let gameActive = false;
-
-    function updateBalanceDisplay() {
-      const balanceEl = document.getElementById('balance');
-      if (balanceEl) {
-        balanceEl.innerText = balance.toFixed(2);
-      }
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
+      else if (type === 'win') { osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+      else if (type === 'lose') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.15, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
     }
 
-    function saveBalance() {
-      localStorage.setItem('demoBalance', balance.toFixed(2));
-      updateBalanceDisplay();
-    }
+    let balance = parseFloat(localStorage.getItem('princessBalance')) || 1000.00;
+    let deck = [], playerHand = [], dealerHand = [], currentBet = 0, gameActive = false;
+
+    function updateBalanceDisplay() { document.getElementById('balance').innerText = balance.toFixed(2); }
+    function saveBalance() { localStorage.setItem('princessBalance', balance.toFixed(2)); updateBalanceDisplay(); }
 
     function createDeck() {
-      const suits = ['♠', '♥', '♦', ''];
+      const suits = ['♠', '♥', '♦', '♣'];
       const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
       deck = [];
-      for (let suit of suits) {
-        for (let value of values) {
-          deck.push({ suit, value });
-        }
-      }
+      for (let suit of suits) for (let value of values) deck.push({ suit, value });
       deck.sort(() => Math.random() - 0.5);
     }
 
@@ -100,35 +89,21 @@
     }
 
     function calculateScore(hand) {
-      let score = 0;
-      let aces = 0;
-      for (let card of hand) {
-        score += getCardValue(card);
-        if (card.value === 'A') aces++;
-      }
-      while (score > 21 && aces > 0) {
-        score -= 10;
-        aces--;
-      }
+      let score = 0, aces = 0;
+      for (let card of hand) { score += getCardValue(card); if (card.value === 'A') aces++; }
+      while (score > 21 && aces > 0) { score -= 10; aces--; }
       return score;
     }
 
     function renderCards() {
-      const dealerEl = document.getElementById('dealerCards');
-      const playerEl = document.getElementById('playerCards');
-      
-      dealerEl.innerHTML = dealerHand.map(c => `<div class="card">${c.value}${c.suit}</div>`).join('');
-      playerEl.innerHTML = playerHand.map(c => `<div class="card">${c.value}${c.suit}</div>`).join('');
+      document.getElementById('dealerCards').innerHTML = dealerHand.map(c => `<div class="card">${c.value}${c.suit}</div>`).join('');
+      document.getElementById('playerCards').innerHTML = playerHand.map(c => `<div class="card">${c.value}${c.suit}</div>`).join('');
     }
 
     function deal() {
+      playSound('click');
       const bet = parseFloat(document.getElementById('betAmount').value);
-      if (bet > balance || bet <= 0) {
-        document.getElementById('status').innerText = "Invalid bet!";
-        document.getElementById('status').className = "status lose";
-        return;
-      }
-
+      if (bet > balance || bet <= 0) { document.getElementById('status').innerText = "Invalid bet!"; document.getElementById('status').className = "status lose"; return; }
       balance -= bet;
       saveBalance();
       currentBet = bet;
@@ -136,53 +111,32 @@
       createDeck();
       playerHand = [deck.pop(), deck.pop()];
       dealerHand = [deck.pop(), deck.pop()];
-      
       renderCards();
-      
       document.getElementById('dealBtn').disabled = true;
       document.getElementById('hitBtn').disabled = false;
       document.getElementById('standBtn').disabled = false;
-      
-      if (calculateScore(playerHand) === 21) {
-        stand();
-      } else {
-        document.getElementById('status').innerText = "Hit or Stand?";
-        document.getElementById('status').className = "status";
-      }
+      if (calculateScore(playerHand) === 21) stand();
+      else { document.getElementById('status').innerText = "Hit or Stand?"; document.getElementById('status').className = "status"; }
     }
 
     function hit() {
       if (!gameActive) return;
+      playSound('click');
       playerHand.push(deck.pop());
       renderCards();
-      
-      if (calculateScore(playerHand) > 21) {
-        endGame(false);
-      }
+      if (calculateScore(playerHand) > 21) endGame(false);
     }
 
     function stand() {
       if (!gameActive) return;
-      
-      while (calculateScore(dealerHand) < 17) {
-        dealerHand.push(deck.pop());
-      }
+      playSound('click');
+      while (calculateScore(dealerHand) < 17) dealerHand.push(deck.pop());
       renderCards();
-      
       const playerScore = calculateScore(playerHand);
       const dealerScore = calculateScore(dealerHand);
-      
-      if (dealerScore > 21 || playerScore > dealerScore) {
-        endGame(true);
-      } else if (playerScore < dealerScore) {
-        endGame(false);
-      } else {
-        balance += currentBet;
-        saveBalance();
-        document.getElementById('status').innerText = "Push! Bet returned.";
-        document.getElementById('status').className = "status";
-        endGame(null);
-      }
+      if (dealerScore > 21 || playerScore > dealerScore) endGame(true);
+      else if (playerScore < dealerScore) endGame(false);
+      else { balance += currentBet; saveBalance(); document.getElementById('status').innerText = "Push! Bet returned."; document.getElementById('status').className = "status"; endGame(null); }
     }
 
     function endGame(won) {
@@ -190,14 +144,15 @@
       document.getElementById('dealBtn').disabled = false;
       document.getElementById('hitBtn').disabled = true;
       document.getElementById('standBtn').disabled = true;
-      
       if (won === true) {
         const winnings = currentBet * 2;
         balance += winnings;
         saveBalance();
-        document.getElementById('status').innerText = `You won ${winnings.toFixed(2)} DEMO!`;
+        playSound('win');
+        document.getElementById('status').innerText = `You won ${winnings.toFixed(2)} GEMS!`;
         document.getElementById('status').className = "status win";
       } else if (won === false) {
+        playSound('lose');
         document.getElementById('status').innerText = "Dealer wins!";
         document.getElementById('status').className = "status lose";
       }
