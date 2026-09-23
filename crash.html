@@ -24,7 +24,6 @@
       border-bottom: 1px solid #2a2a2a;
     }
     .logo { font-weight: 700; font-size: 18px; }
-    .logo span { color: #00e701; }
     .balance-box {
       background: #262626;
       padding: 7px 12px;
@@ -52,9 +51,8 @@
       font-size: 64px;
       font-weight: 700;
       text-align: center;
-      margin: 30px 0 10px;
+      margin: 40px 0 10px;
       color: #00e701;
-      transition: color 0.1s;
     }
     .multiplier.crashed { color: #ff3b3b; }
     .status {
@@ -62,12 +60,12 @@
       color: #888;
       margin-bottom: 30px;
       font-size: 15px;
+      min-height: 22px;
     }
     .bet-section {
       background: #1a1a1a;
       border-radius: 12px;
       padding: 20px;
-      margin-bottom: 20px;
     }
     .bet-label { color: #888; font-size: 13px; margin-bottom: 8px; }
     .bet-input {
@@ -81,35 +79,18 @@
       font-weight: 600;
       margin-bottom: 16px;
     }
-    .btn-row { display: flex; gap: 10px; }
     .btn {
-      flex: 1;
+      width: 100%;
       padding: 16px;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 600;
       cursor: pointer;
     }
     .btn-bet { background: #00e701; color: #000; }
     .btn-cashout { background: #ffcc00; color: #000; display: none; }
-    .btn:disabled { opacity: 0.5; }
-    .history {
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-    .history-item {
-      background: #1a1a1a;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .history-item.high { color: #00e701; }
-    .history-item.low { color: #ff3b3b; }
+    .btn:active { opacity: 0.8; }
   </style>
 </head>
 <body>
@@ -126,22 +107,17 @@
 
     <div class="bet-section">
       <div class="bet-label">Bet Amount</div>
-      <input type="number" class="bet-input" id="betAmount" value="10" min="1">
+      <input type="number" class="bet-input" id="betAmount" value="10" min="1" step="1">
       
-      <div class="btn-row">
-        <button class="btn btn-bet" id="betBtn" onclick="placeBet()">Bet</button>
-        <button class="btn btn-cashout" id="cashoutBtn" onclick="cashOut()">Cash Out</button>
-      </div>
+      <button class="btn btn-bet" id="betBtn" onclick="startGame()">Bet</button>
+      <button class="btn btn-cashout" id="cashoutBtn" onclick="cashOut()">Cash Out</button>
     </div>
-
-    <div class="history" id="history"></div>
   </main>
 
   <script>
-    // Balance system
-    const STARTING_BALANCE = 1000;
+    // Balance
     function getBalance() {
-      return parseFloat(localStorage.getItem('demoBalance')) || STARTING_BALANCE;
+      return parseFloat(localStorage.getItem('demoBalance')) || 1000;
     }
     function setBalance(amount) {
       localStorage.setItem('demoBalance', amount.toFixed(2));
@@ -149,68 +125,74 @@
     }
     setBalance(getBalance());
 
-    // Game variables
-    let isPlaying = false;
-    let currentMultiplier = 1.00;
-    let crashPoint = 0;
-    let bet = 0;
-    let interval = null;
-    let history = [];
+    let isRunning = false;
+    let currentMult = 1.00;
+    let crashAt = 0;
+    let betAmount = 0;
+    let timer = null;
 
-    function placeBet() {
-      bet = parseFloat(document.getElementById('betAmount').value);
-      if (isNaN(bet) || bet <= 0) return alert('Enter a valid bet');
-      if (bet > getBalance()) return alert('Not enough balance');
+    function startGame() {
+      if (isRunning) return;
 
-      setBalance(getBalance() - bet);
-      isPlaying = true;
-      currentMultiplier = 1.00;
-      crashPoint = generateCrashPoint();
+      betAmount = parseFloat(document.getElementById('betAmount').value);
+
+      if (!betAmount || betAmount <= 0) {
+        alert('Enter a valid bet amount');
+        return;
+      }
+      if (betAmount > getBalance()) {
+        alert('Not enough balance');
+        return;
+      }
+
+      // Take the bet
+      setBalance(getBalance() - betAmount);
+
+      // Generate crash point (between 1.00 and ~10x mostly)
+      crashAt = Math.max(1.00, (0.99 / (1 - Math.random()))).toFixed(2);
+      crashAt = parseFloat(crashAt);
+
+      isRunning = true;
+      currentMult = 1.00;
 
       document.getElementById('betBtn').style.display = 'none';
       document.getElementById('cashoutBtn').style.display = 'block';
-      document.getElementById('status').textContent = 'Game running...';
+      document.getElementById('status').textContent = 'Game is running...';
       document.getElementById('multiplier').classList.remove('crashed');
+      document.getElementById('multiplier').style.color = '#00e701';
 
-      interval = setInterval(updateMultiplier, 50);
-    }
+      timer = setInterval(function() {
+        currentMult += 0.01 + (currentMult * 0.005);
+        document.getElementById('multiplier').textContent = currentMult.toFixed(2) + 'x';
 
-    function updateMultiplier() {
-      currentMultiplier += 0.01 + (currentMultiplier * 0.001);
-      document.getElementById('multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
-
-      if (currentMultiplier >= crashPoint) {
-        crash();
-      }
+        if (currentMult >= crashAt) {
+          endGame(false);
+        }
+      }, 70);
     }
 
     function cashOut() {
-      if (!isPlaying) return;
-      clearInterval(interval);
-      isPlaying = false;
+      if (!isRunning) return;
+      endGame(true);
+    }
 
-      const win = bet * currentMultiplier;
-      setBalance(getBalance() + win);
+    function endGame(won) {
+      clearInterval(timer);
+      isRunning = false;
 
-      document.getElementById('status').textContent = `Cashed out at ${currentMultiplier.toFixed(2)}x • Won $${win.toFixed(2)}`;
       document.getElementById('betBtn').style.display = 'block';
       document.getElementById('cashoutBtn').style.display = 'none';
 
-      addHistory(currentMultiplier, true);
+      if (won) {
+        const profit = betAmount * currentMult;
+        setBalance(getBalance() + profit);
+        document.getElementById('status').textContent = `Cashed out at ${currentMult.toFixed(2)}x • Won $${profit.toFixed(2)}`;
+      } else {
+        document.getElementById('multiplier').style.color = '#ff3b3b';
+        document.getElementById('multiplier').classList.add('crashed');
+        document.getElementById('status').textContent = `Crashed at ${crashAt.toFixed(2)}x`;
+      }
     }
-
-    function crash() {
-      clearInterval(interval);
-      isPlaying = false;
-
-      document.getElementById('multiplier').classList.add('crashed');
-      document.getElementById('status').textContent = `Crashed at ${crashPoint.toFixed(2)}x`;
-      document.getElementById('betBtn').style.display = 'block';
-      document.getElementById('cashoutBtn').style.display = 'none';
-
-      addHistory(crashPoint, false);
-    }
-
-    function generateCrashPoint() {
-      // Simple provably fair-ish random crash point
-      const e =
+  </script>
+</body>
+</html>
