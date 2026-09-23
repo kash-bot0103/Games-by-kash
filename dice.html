@@ -85,7 +85,7 @@
   </main>
 
   <script>
-    let balance = 1000.00;
+    let balance = parseFloat(localStorage.getItem('demoBalance')) || 1000.00;
     let mode = 'over';
     const balanceEl = document.getElementById('balance');
     const targetSlider = document.getElementById('targetSlider');
@@ -96,7 +96,17 @@
     const resultText = document.getElementById('resultText');
     const rollBtn = document.getElementById('rollBtn');
 
-    function updateBalance() { balanceEl.innerText = balance.toFixed(2); }
+    function updateBalanceDisplay() {
+      const balanceEl = document.getElementById('balance');
+      if (balanceEl) {
+        balanceEl.innerText = balance.toFixed(2);
+      }
+    }
+
+    function saveBalance() {
+      localStorage.setItem('demoBalance', balance.toFixed(2));
+      updateBalanceDisplay();
+    }
 
     function setMode(newMode) {
       mode = newMode;
@@ -110,7 +120,7 @@
       targetVal.innerText = target.toFixed(2);
       
       let chance = mode === 'over' ? (100 - target) : target;
-      let multiplier = 99 / chance; // 1% house edge
+      let multiplier = 99 / chance;
       
       multiplierVal.innerText = multiplier.toFixed(2) + 'x';
       chanceVal.innerText = chance.toFixed(2) + '%';
@@ -125,7 +135,7 @@
       
       rollBtn.disabled = true;
       balance -= bet;
-      updateBalance();
+      saveBalance();
       
       const roll = Math.random() * 100;
       const target = parseFloat(targetSlider.value);
@@ -139,18 +149,20 @@
       if (won) {
         const winAmount = bet * multiplier;
         balance += winAmount;
+        saveBalance();
         resultText.innerText = `Rolled ${roll.toFixed(2)} | Won ${winAmount.toFixed(2)}!`;
         resultText.className = "result win";
       } else {
         resultText.innerText = `Rolled ${roll.toFixed(2)} | Lost!`;
         resultText.className = "result lose";
       }
-      updateBalance();
+      updateBalanceDisplay();
       rollBtn.disabled = false;
     }
 
     document.getElementById('betAmount').addEventListener('input', updateStats);
     updateStats();
+    updateBalanceDisplay();
   </script>
 </body>
 </html>
