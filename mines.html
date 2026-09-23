@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mines | Demo Casino</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #1e293b; border-bottom: 1px solid #334155; }
+    .logo { font-size: 1.5rem; font-weight: 700; } .logo span { color: #3b82f6; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .balance-box { background-color: #334155; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
+    .btn-reset { background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .btn-back { background-color: #475569; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
+    .main { flex: 1; padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
+    .game-container { background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
+    .controls { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+    .control-group { display: flex; flex-direction: column; text-align: left; }
+    .control-group label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    input, select { background-color: #0f172a; border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 6px; font-size: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 400px; margin: 0 auto; }
+    .tile { aspect-ratio: 1; background-color: #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: background 0.2s; }
+    .tile:hover { background-color: #475569; }
+    .tile.gem { background-color: #22c55e; }
+    .tile.mine { background-color: #ef4444; }
+    .tile.disabled { cursor: not-allowed; }
+    .btn-action { background-color: #3b82f6; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; width: 100%; max-width: 400px; }
+    .btn-action:disabled { background-color: #475569; cursor: not-allowed; }
+    .btn-cashout { background-color: #22c55e; }
+    .status { margin-top: 1rem; font-size: 1.2rem; font-weight: 600; min-height: 1.5rem; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">DEMO<span>CASINO</span></div>
+    <div class="header-right">
+      <a href="index.html" class="btn-back">Back</a>
+      <div class="balance-box">Balance: <span id="balance">1000.00</span> DEMO</div>
+    </div>
+  </header>
+
+  <main class="main">
+    <h1>💣 Mines</h1>
+    <div class="game-container">
+      <div class="controls">
+        <div class="control-group">
+          <label>Bet Amount</label>
+          <input type="number" id="betAmount" value="10" min="1">
+        </div>
+        <div class="control-group">
+          <label>Mines (1-24)</label>
+          <select id="mineCount">
+            <option value="1">1 Mine</option>
+            <option value="3" selected>3 Mines</option>
+            <option value="5">5 Mines</option>
+            <option value="10">10 Mines</option>
+            <option value="20">20 Mines</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+      
+      <button class="btn-action" id="actionBtn" onclick="startGame()">Start Game</button>
+      <div class="status" id="status"></div>
+    </div>
+  </main>
+
+  <script>
+    let balance = 1000.00;
+    let isPlaying = false;
+    let mines = [];
+    let revealed = 0;
+    let currentBet = 0;
+    let currentMines = 0;
+    const gridEl = document.getElementById('grid');
+    const actionBtn = document.getElementById('actionBtn');
+    const statusEl = document.getElementById('status');
+    const balanceEl = document.getElementById('balance');
+
+    function updateBalance() { balanceEl.innerText = balance.toFixed(2); }
+
+    function createGrid() {
+      gridEl.innerHTML = '';
+      for (let i = 0; i < 25; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.onclick = () => clickTile(i, tile);
+        gridEl.appendChild(tile);
+      }
+    }
+
+    function startGame() {
+      const bet = parseFloat(document.getElementById('betAmount').value);
+      const mineCount = parseInt(document.getElementById('mineCount').value);
+      
+      if (bet > balance || bet <= 0) { statusEl.innerText = "Invalid bet!"; return; }
+      
+      balance -= bet;
+      updateBalance();
+      currentBet = bet;
+      currentMines = mineCount;
+      isPlaying = true;
+      revealed = 0;
+      statusEl.innerText = `Multiplier: 1.00x`;
+      actionBtn.innerText = "Cash Out";
+      actionBtn.className = "btn-action btn-cashout";
+      
+      mines = Array(25).fill(false);
+      let placed = 0;
+      while (placed < mineCount) {
+        let r = Math.floor(Math.random() * 25);
+        if (!mines[r]) { mines[r] = true; placed++; }
+      }
+      createGrid();
+    }
+
+    function clickTile(index, tile) {
+      if (!isPlaying || tile.classList.contains('disabled')) return;
+      
+      tile.classList.add('disabled');
+      if (mines[index]) {
+        tile.classList.add('mine');
+        tile.innerText = '💣';
+        endGame(false);
+      } else {
+        tile.classList.add('gem');
+        tile.innerText = '💎';
+        revealed++;
+        let multiplier = 1;
+        for(let i=0; i<revealed; i++) multiplier *= (25 - i) / (25 - currentMines - i);
+        multiplier *= 0.97; // House edge
+        statusEl.innerText = `Multiplier: ${multiplier.toFixed(2)}x | Win: ${(currentBet * multiplier).toFixed(2)}`;
+      }
+    }
+
+    function endGame(won) {
+      isPlaying = false;
+      actionBtn.innerText = "Start Game";
+      actionBtn.className = "btn-action";
+      
+      if (won) {
+        let multiplier = 1;
+        for(let i=0; i<revealed; i++) multiplier *= (25 - i) / (25 - currentMines - i);
+        multiplier *= 0.97;
+        let winAmount = currentBet * multiplier;
+        balance += winAmount;
+        statusEl.innerText = `You won ${winAmount.toFixed(2)} DEMO!`;
+        statusEl.style.color = "#4ade80";
+      } else {
+        statusEl.innerText = "You hit a mine! Game Over.";
+        statusEl.style.color = "#ef4444";
+        // Reveal all mines
+        const tiles = gridEl.children;
+        for(let i=0; i<25; i++) {
+          if (mines[i]) { tiles[i].classList.add('mine'); tiles[i].innerText = '💣'; }
+        }
+      }
+      updateBalance();
+    }
+
+    createGrid();
+  </script>
+</body>
+</html>
