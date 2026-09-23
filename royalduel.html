@@ -5,94 +5,425 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Royal Duel</title>
   <style>
-    /* --- ROYAL DUEL THEME --- */
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #0b1120; /* Deep Navy Blue */
-      color: #ffffff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      background: #0f172a;
-      border-bottom: 1px solid #1e293b;
-    }
-    .balance { color: #fbbf24; font-weight: bold; font-size: 1.2rem; }
-    .btn-back { background: #1e293b; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; }
-
-    /* Game Area */
-    .game-board {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem;
-    }
-
-    /* Opponent Area */
-    .opponent-area { text-align: center; margin-top: 1rem; }
-    .opponent-name { font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; }
-    .cards-hand { display: flex; justify-content: center; gap: -10px; }
+    body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; user-select: none; }
     
-    /* Card Styling */
-    .card {
-      width: 60px; height: 90px;
-      background: linear-gradient(135deg, #1e3a8a, #172554);
-      border: 2px solid #fbbf24; /* Gold Border */
-      border-radius: 8px;
-      margin-left: -15px; /* Overlap effect */
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    .card:first-child { margin-left: 0; }
-    .card-crown { font-size: 1.5rem; color: #fbbf24; }
+    /* --- SCREENS --- */
+    .screen { display: none; flex: 1; flex-direction: column; }
+    .screen.active { display: flex; }
 
-    /* Center Play Area */
-    .play-area {
-      display: flex;
-      gap: 2rem;
-      align-items: center;
-      margin: 2rem 0;
-    }
-    .pile {
-      width: 70px; height: 100px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: bold;
-    }
-    .draw-pile { background: #1e3a8a; border: 2px solid #fbbf24; }
-    .active-card { background: #22c55e; color: white; font-size: 2rem; border-radius: 10px; box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+    /* --- BETTING SCREEN --- */
+    .bet-screen { align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+    .bet-title { font-size: 2rem; color: #fbbf24; margin-bottom: 2rem; font-weight: 800; }
+    .stake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; max-width: 400px; margin-bottom: 2rem; }
+    .stake-btn { background: #1e293b; border: 2px solid #334155; padding: 1.5rem; border-radius: 12px; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+    .stake-btn.selected { border-color: #fbbf24; background: #1e3a8a; box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+    .stake-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .confirm-btn { background: linear-gradient(135deg, #fbbf24, #d97706); color: #0b1120; border: none; padding: 1rem 3rem; border-radius: 30px; font-size: 1.2rem; font-weight: 800; cursor: pointer; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4); }
 
-    /* Player Hand */
-    .player-hand {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-    .player-card {
-      width: 70px; height: 100px;
-      background: white;
-      border-radius: 10px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 1.5rem; font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      cursor: pointer;
-      transition: transform 0.2s;
+    /* --- GAME BOARD --- */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #0f172a; border-bottom: 1px solid #1e293b; }
+    .balance { color: #fbbf24; font-weight: bold; }
+    .btn-back { background: #1e293b; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; }
+
+    .game-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 1rem; position: relative; }
+    
+    .opponent-info { text-align: center; margin-bottom: 1rem; }
+    .opponent-name { font-weight: bold; color: #94a3b8; }
+    .opponent-hand { display: flex; justify-content: center; height: 60px; }
+    .card-back { width: 40px; height: 60px; background: linear-gradient(135deg, #1e3a8a, #172554); border: 2px solid #fbbf24; border-radius: 6px; margin-left: -15px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+    .card-back:first-child { margin-left: 0; }
+
+    .center-table { display: flex; gap: 2rem; align-items: center; margin: 1 = ['red', 'blue', 'green', 'goldrem 0; }
+    .pile { width: 60px; height: 90px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; }
+    .draw-pile { background: #1e3a8a; border: 2px solid #fbbf24; cursor: pointer; }
+    .discard-pile { border: 2px solid #334155; font-size: 2rem; }
+    
+    .turn-indicator { background: #fbbf24; color: #0b1120; padding: 0.3rem 1rem; border-radius: 15px; font-weight: 800; font-size: 0.9rem; margin-bottom: 0.5rem; }
+
+    .player-hand { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; padding-bottom: 1rem; min-height: 100px; }
+    .player-card { 
+      width: 60px; height: 90px; background: white; border-radius: 8px; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      font-weight: bold; font-size: 1.5rem; cursor: pointer; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: transform 0.2s; position: relative;
     }
     .player-card:hover { transform: translateY(-10px); }
-    .card-red { color: #ef4444; }
-    .card-gold { color: #d97706; background: #fef3c7; }
+    .player-card.playable { box-shadow: 0 0 15px rgba(251, 191, 36, 0.8); border: 2px solid #fbbf24; }
+    .color-red { color: #ef4444; } .color-blue { color: #3b82f6; } .color-green { color: #22c55e; } .color-gold { color: #d97706; background: #fef3c7; }
 
-    /*
+    /* --- ANIMATIONS --- */
+    @keyframes dealCard { 0% { transform: translateY(-50px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+    .anim-deal { animation: dealCard 0.4s ease-out forwards; }
+    
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .anim-shake { animation: shake 0.3s ease-in-out; }
+
+    /* --- MODAL (Color Picker) --- */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100; }
+    .modal.active { display: flex; }
+    .modal-content { background: #1e293b; padding: 2rem; border-radius: 12px; text-align: center; border: 2px solid #fbbf24; }
+    .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .color-btn { padding: 1rem; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+  <!-- BETTING SCREEN -->
+  <div id="betScreen" class="screen active bet-screen">
+    <div class="bet-title">Choose Your Stake</div>
+    <div class="stake-grid">
+      <button class="stake-btn selected" onclick="selectStake(10, this)">10</button>
+      <button class="stake-btn" onclick="selectStake(50, this)">50</button>
+      <button class="stake-btn" onclick="selectStake(100, this)">100</button>
+      <button class="stake-btn" onclick="selectStake(500, this)">500</button>
+    </div'];
+    const values = ['1', '2',>
+    <button class="confirm-btn" onclick="startGame()">CONFIRM STAKE</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="gameScreen" class="screen">
+    <header class="header">
+      <a href="index.html" class="btn-back">← Back</a>
+      <div class="balance">🪙 <span id="balanceDisplay">1000</span></div>
+    </header>
+
+    <main class="game-area">
+      <div class="opponent-info">
+        <div class="opponent-name">👑 Royal Rival (<span id="oppCardCount">7</span>)</div>
+        <div class="opponent-hand" id="opponentHand"></div>
+      </div>
+
+      <div style="text-align: center;">
+        <div class="turn-indicator" id="turnIndicator">Your Turn</div>
+        <div class="center-table">
+          <div class="pile draw-pile" onclick="drawCard()">👑</div>
+          <div class="pile discard-pile" id="discardPile"></div>
+        </div>
+        <div style="color: #94a3b8; font-size: 0.8rem;">Current Color: <span id="currentColor" style="color: #22c55e;">Green</span></div>
+      </div>
+
+      <div class="player-hand" id="playerHand"></div>
+    </main>
+  </div>
+
+  <!-- COLOR PICKER MODAL -->
+  <div id="colorModal" class="modal">
+    <div class="modal-content">
+      <h3 style="color: #fbbf24; margin-top: 0;">Choose Color</h3>
+      <div class="color-grid">
+        <button class="color-btn" style="background: #ef4444; color: white;" onclick="pickColor('red')">Red</button>
+        <button class="color-btn" style="background: #3b82f6; color: white;" onclick="pickColor('blue')">Blue</button>
+        <button class="color-btn" style="background: #22c55e; color: white;" onclick="pickColor('green')">Green</button>
+        <button class="color-btn" style="background: #d97706; color: white;" onclick="pickColor('gold')">Gold</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- SOUND SYSTEM ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      if (type === 'deal') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
+      else if (type === 'play') { osc.type = 'triangle'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.15); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15); osc.start(); osc.stop(audioCtx.currentTime + 0.15); }
+      else if (type === 'draw') { osc.type = 'sine'; osc.frequency.setValueAtTime(1000, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08); osc.start(); osc.stop(audioCtx.currentTime + 0.08); }
+      else if (type === 'win') { [523, 659, 783].forEach((f, i) => { setTimeout(() => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(0.2, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); o.start(); o.stop(audioCtx.currentTime + 0.5); }, i * 100); }); }
+      else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); }
+    }
+
+    // --- GAME LOGIC ---
+    let balance = 1000;
+    let currentStake = 10;
+    let deck = [], playerHand = [], opponentHand = [], discardPile = [];
+    let currentColor = 'green';
+    let isPlayerTurn = true;
+    let pendingWildCard = null;
+
+    const colors = ['red', 'blue', 'green', 'gold'];
+    const values = ['1', '2', '3', '4', '5', '6', '3', '4', '5', '6', '7', '8', '9', 'W '7', '8', '9', 'W']; // W = Wild
+
+    function select']; // W = Wild
+
+    function selectStake(amount, btn) {
+      playStake(amount, btn) {
+      playSound('deal');
+      if (amountSound('deal');
+      if (amount > balance) return;
+      currentSt > balance) return;
+      currentStake = amount;
+      document.querySelectorAll('.stake-btnake = amount;
+      document.querySelectorAll('.stake-btn').forEach(b => b.classList.remove('selected'));
+     ').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function btn.classList.add('selected');
+    }
+
+    function startGame() {
+      if (currentStake > startGame() {
+      if (currentStake > balance) { playSound('error'); return; } balance) { playSound('error'); return; }
+      balance -= currentStake;
+      document.getElementById
+      balance -= currentStake;
+      document.getElementById('balanceDisplay').innerText = balance;
+      
+('balanceDisplay').innerText = balance;
+      
+      document.getElementById('betScreen').classList.remove('active');      document.getElementById('betScreen').classList.remove('active');
+      document.getElementById('gameScreen').classList.add('active
+      document.getElementById('gameScreen').classList.add('active');
+      
+      createDeck();
+     ');
+      
+      createDeck();
+      playerHand = deck.splice(0, 7);
+ playerHand = deck.splice(0, 7);
+      opponentHand = deck.splice(0, 7);      opponentHand = deck.splice(0, 7);
+      discardPile = [deck.pop()
+      discardPile = [deck.pop()];
+      currentColor = discardPile[0].];
+      currentColor = discardPile[0].color;
+      
+      playSound('deal');color;
+      
+      playSound('deal');
+      renderGame();
+    }
+
+    function
+      renderGame();
+    }
+
+    function createDeck() {
+      deck = [];
+      for createDeck() {
+      deck = [];
+      for (let c of colors) for (let v of (let c of colors) for (let v of values) deck.push({ color: c, value values) deck.push({ color: c, value: v });
+      deck.sort(() => Math.random(): v });
+      deck.sort(() => Math.random() - 0.5);
+    }
+
+    function - 0.5);
+    }
+
+    function renderGame() {
+      document.getElementById('oppCard renderGame() {
+      document.getElementById('oppCardCount').innerText = opponentHand.length;
+     Count').innerText = opponentHand.length;
+      document.getElementById('opponentHand').innerHTML = opponent document.getElementById('opponentHand').innerHTML = opponentHand.map(() => '<div class="card-back">Hand.map(() => '<div class="card-back">👑</div>').join('');
+      
+     👑</div>').join('');
+      
+      const topCard = discardPile[discardPile const topCard = discardPile[discardPile.length - 1];
+      const discardEl = document.length - 1];
+      const discardEl = document.getElementById('discardPile');
+      discardEl.innerText.getElementById('discardPile');
+      discardEl.innerText = topCard.value === 'W' ? ' = topCard.value === 'W' ? '' : topCard.value;
+      discardEl.className' : topCard.value;
+      discardEl.className = `pile discard-pile color-${currentColor = `pile discard-pile color-${currentColor}`;
+      document.getElementById('currentColor').innerText = current}`;
+      document.getElementById('currentColor').innerText = currentColor.charAt(0).toUpperCase() + currentColor.sliceColor.charAt(0).toUpperCase() + currentColor.slice(1);
+      document.getElementById('currentColor').style.color(1);
+      document.getElementById('currentColor').style.color = currentColor === 'gold' ? '#fbbf = currentColor === 'gold' ? '#fbbf24' : currentColor;
+
+      document.getElementById('24' : currentColor;
+
+      document.getElementById('turnIndicator').innerText = isPlayerTurn ? "turnIndicator').innerText = isPlayerTurn ? "Your Turn" : "Opponent's Turn";
+     Your Turn" : "Opponent's Turn";
+      document.getElementById('turnIndicator').style.background = isPlayerTurn document.getElementById('turnIndicator').style.background = isPlayerTurn ? '#fbbf24' : '#9 ? '#fbbf24' : '#94a3b8';
+
+      const playerEl4a3b8';
+
+      const playerEl = document.getElementById('playerHand');
+      playerEl.innerHTML = document.getElementById('playerHand');
+      playerEl.innerHTML = '';
+      playerHand.forEach((card, i) = '';
+      playerHand.forEach((card, i) => {
+        const el = document.createElement(' => {
+        const el = document.createElement('div');
+        el.className = `player-card colordiv');
+        el.className = `player-card color-${card.color} anim-deal`;
+-${card.color} anim-deal`;
+        el.innerText = card.value === 'W'        el.innerText = card.value === 'W' ? '👑' : card.value;
+        ? '👑' : card.value;
+        if (isPlayable(card)) el.classList.add('play if (isPlayable(card)) el.classList.add('playable');
+        el.onclick = () => playCard(iable');
+        el.onclick = () => playCard(i);
+        playerEl.appendChild(el);
+      });
+);
+        playerEl.appendChild(el);
+      });
+    }
+
+    function isPlayable(card) {
+         }
+
+    function isPlayable(card) {
+      const top = discardPile[discardPile.length const top = discardPile[discardPile.length - 1];
+      return card.color === currentColor - 1];
+      return card.color === currentColor || card.value === top.value || card.value === 'W || card.value === top.value || card.value === 'W';
+    }
+
+    function playCard(index';
+    }
+
+    function playCard(index) {
+      if (!isPlayerTurn)) {
+      if (!isPlayerTurn) return;
+      const card = playerHand[index];
+ return;
+      const card = playerHand[index];
+      if (!isPlayable(card)) { playSound('error      if (!isPlayable(card)) { playSound('error'); document.getElementById('playerHand').children[index].classList.add'); document.getElementById('playerHand').children[index].classList.add('anim-shake'); setTimeout(()=>document.getElementById('player('anim-shake'); setTimeout(()=>document.getElementById('playerHand').children[index].classList.remove('anim-shake'),Hand').children[index].classList.remove('anim-shake'), 300); return; }
+
+ 300); return; }
+
+      if (card.value === 'W') {      if (card.value === 'W') {
+        pendingWildCard = index;
+        document
+        pendingWildCard = index;
+        document.getElementById('colorModal').classList.add('active');
+     .getElementById('colorModal').classList.add('active');
+      } else {
+        executePlay(index, } else {
+        executePlay(index, card.color);
+      }
+    }
+
+    function card.color);
+      }
+    }
+
+    function pickColor(color) {
+      document.getElementById('colorModal pickColor(color) {
+      document.getElementById('colorModal').classList.remove('active');
+      executePlay(p').classList.remove('active');
+      executePlay(pendingWildCard, color);
+    }
+
+    functionendingWildCard, color);
+    }
+
+    function executePlay(index, newColor) {
+ executePlay(index, newColor) {
+      playSound('play');
+      const card      playSound('play');
+      const card = playerHand.splice(index, 1)[0];
+ = playerHand.splice(index, 1)[0];
+      discardPile.push(card);
+      currentColor =      discardPile.push(card);
+      currentColor = newColor;
+      
+      if (player newColor;
+      
+      if (playerHand.length === 0) { endGame(true); returnHand.length === 0) { endGame(true); return; }
+      
+      isPlayerTurn = false;
+; }
+      
+      isPlayerTurn = false;
+      renderGame();
+      setTimeout(opponentTurn,       renderGame();
+      setTimeout(opponentTurn, 1000);
+    }
+
+    function draw1000);
+    }
+
+    function drawCard() {
+      if (!isPlayerTurn || deckCard() {
+      if (!isPlayerTurn || deck.length === 0) return;
+      playSound('.length === 0) return;
+      playSound('draw');
+      playerHand.push(deck.pop());
+     draw');
+      playerHand.push(deck.pop());
+      isPlayerTurn = false;
+      renderGame();
+ isPlayerTurn = false;
+      renderGame();
+      setTimeout(opponentTurn, 1000);      setTimeout(opponentTurn, 1000);
+    }
+
+    function opponentTurn() {
+     
+    }
+
+    function opponentTurn() {
+      if (playerHand.length === 0 || opponent if (playerHand.length === 0 || opponentHand.length === 0) return;
+      let playableHand.length === 0) return;
+      let playableIndex = opponentHand.findIndex(c => isPlayableIndex = opponentHand.findIndex(c => isPlayable(c));
+      
+      if (playableIndex !== -(c));
+      
+      if (playableIndex !== -1) {
+        const card = opponentHand[play1) {
+        const card = opponentHand[playableIndex];
+        opponentHand.splice(playableableIndex];
+        opponentHand.splice(playableIndex, 1);
+        discardPile.push(cardIndex, 1);
+        discardPile.push(card);
+        if (card.value === 'W') current);
+        if (card.value === 'W') currentColor = colors[Math.floor(Math.random() * Color = colors[Math.floor(Math.random() * 4)];
+        else currentColor = card.color;
+4)];
+        else currentColor = card.color;
+        playSound('play');
+      } else if        playSound('play');
+      } else if (deck.length > 0) {
+        opponentHand (deck.length > 0) {
+        opponentHand.push(deck.pop());
+        playSound('draw');
+.push(deck.pop());
+        playSound('draw');
+      }
+
+      if (opponentHand.length ===      }
+
+      if (opponentHand.length === 0) { endGame(false); return; }
+ 0) { endGame(false); return; }
+      isPlayerTurn = true;
+      renderGame();      isPlayerTurn = true;
+      renderGame();
+    }
+
+    function endGame(w
+    }
+
+    function endGame(won) {
+      if (won) {
+       on) {
+      if (won) {
+        balance += currentStake * 2;
+        play balance += currentStake * 2;
+        playSound('win');
+        alert(`Sound('win');
+        alert(` ROYAL VICTORY! You won ROYAL VICTORY! You won ${currentStake} coins!`);
+ ${currentStake} coins!`);
+      } else {
+        playSound('error');
+      } else {
+        playSound('error');
+        alert(`Defeat! The Royal R        alert(`Defeat! The Royal Rival wins.`);
+      }
+      document.getElementByIdival wins.`);
+      }
+      document.getElementById('balanceDisplay').innerText = balance;
+      document.getElementById('balanceDisplay').innerText = balance;
+      document.getElementById('gameScreen').classList.remove('active');
+      document('gameScreen').classList.remove('active');
+      document.getElementById('betScreen').classList.add('active');
+   .getElementById('betScreen').classList.add('active');
+    }
+  </script>
+</body>
+</ }
+  </script>
+</body>
+</html>
