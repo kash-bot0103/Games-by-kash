@@ -36,4 +36,113 @@ body {
 
 .header-right {
   display: flex;
-  align
+  align-items: center;
+  gap: 12px;
+}
+
+.balance-box {
+  background-color: #262626;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.balance-label {
+  color: #888;
+  font-size: 12px;
+}
+
+#balance {
+  color: #00e701;
+}
+
+.currency {
+  color: #888;
+  font-size: 12px;
+}
+
+.btn-reset {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* Main */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 16px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.hero h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.hero p {
+  color: #999;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.demo-badge {
+  display: inline-block;
+  background-color: #00e701;
+  color: #000;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* Games */
+.games-section h2 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.game-card {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 20px 12px;
+  text-align: center;
+}
+
+.game-card:active {
+  border-color: #00e701;
+  background-color: #222;
+}
+
+.game-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.game-card h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.game-card p {
+  color: #888;
+  font-size: 12px;
+}
