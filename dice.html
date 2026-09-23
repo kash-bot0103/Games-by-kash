@@ -6,77 +6,95 @@
   <title>Dice | Princess Casino</title>
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: linear-gradient(90deg, #1e1b4b, #312e81); border-bottom: 2px solid #fbbf24; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #1e293b; border-bottom: 1px solid #334155; }
     .logo { font-size: 1.5rem; font-weight: 700; color: #fbbf24; } .logo span { color: #ec4899; }
-    .header-right { display: flex; align-items: center; gap: 1rem; }
-    .balance-box { background-color: #1e293b; border: 1px solid #fbbf24; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
-    .btn-back { background-color: #475569; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
-    .main { flex: 1; padding: 2rem; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
-    .game-container { background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
-    .controls { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
-    .control-group { display: flex; flex-direction: column; text-align: left; }
-    .control-group label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
-    input { background-color: #0f172a; border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 6px; font-size: 1rem; width: 100px;}
+    .balance-box { background: #0f172a; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 6px; color: #4ade80; font-weight: bold; }
+    .btn-back { background: #334155; color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; }
+    
+    .game-container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; width: 100%; box-sizing: border-box; }
+    .panel { background: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; margin-bottom: 1rem; }
+    
+    .dice-display { width: 150px; height: 150px; margin: 2rem auto; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 5rem; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); transition: transform 0.3s; }
+    .dice-display.rolling { animation: roll 0.5s ease-in-out; }
+    @keyframes roll { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(720deg) scale(1.2); } 100% { transform: rotate(0deg) scale(1); } }
+    
     .slider-container { margin: 2rem 0; }
-    input[type=range] { width: 100%; accent-color: #3b82f6; }
-    .stats { display: flex; justify-content: space-around; margin-bottom: 2rem; background: #0f172a; padding: 1rem; border-radius: 8px; }
-    .stat-box { text-align: center; }
-    .stat-label { font-size: 0.8rem; color: #94a3b8; }
-    .stat-value { font-size: 1.2rem; font-weight: 700; color: #3b82f6; }
-    .btn-roll { background-color: #3b82f6; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.2rem; font-weight: 600; cursor: pointer; width: 100%; }
-    .btn-roll:disabled { background-color: #475569; cursor: not-allowed; }
-    .result { margin-top: 1.5rem; font-size: 1.5rem; font-weight: 700; min-height: 2rem; }
-    .win { color: #4ade80; } .lose { color: #ef4444; }
-    .toggle-group { display: flex; background: #0f172a; border-radius: 6px; overflow: hidden; border: 1px solid #334155; }
-    .toggle-btn { padding: 0.75rem 1.5rem; cursor: pointer; background: transparent; border: none; color: #94a3b8; font-weight: 600;}
+    .slider-label { display: flex; justify-content: space-between; margin-bottom: 1rem; color: #94a3b8; font-weight: 600; }
+    input[type=range] { width: 100%; height: 10px; background: #0f172a; border-radius: 5px; outline: none; -webkit-appearance: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 25px; height: 25px; background: #3b82f6; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0; }
+    .stat-box { background: #0f172a; padding: 1rem; border-radius: 8px; text-align: center; border: 1px solid #334155; }
+    .stat-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.5rem; }
+    .stat-value { font-size: 1.5rem; font-weight: 800; color: #fbbf24; }
+    
+    .toggle-group { display: flex; background: #0f172a; border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem; border: 1px solid #334155; }
+    .toggle-btn { flex: 1; padding: 1rem; background: transparent; border: none; color: #64748b; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .toggle-btn.active { background: #3b82f6; color: white; }
+    
+    .btn-roll { width: 100%; padding: 1.25rem; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 8px; color: white; font-size: 1.3rem; font-weight: 800; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #15803d; transition: all 0.1s; }
+    .btn-roll:active { transform: translateY(4px); box-shadow: none; }
+    .btn-roll:disabled { background: #475569; color: #94a3b8; box-shadow: none; cursor: not-allowed; transform: none; }
+    
+    .result-display { text-align: center; margin-top: 1.5rem; font-size: 1.5rem; font-weight: 700; min-height: 2rem; }
+    .win { color: #22c55e; text-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
+    .lose { color: #ef4444; }
+    
+    .bet-controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+    .bet-input { flex: 1; background: #0f172a; border: 1px solid #334155; color: white; padding: 1rem; border-radius: 8px; font-size: 1.1rem; text-align: center; }
+    .quick-bet { background: #334155; border: none; color: white; padding: 0 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .quick-bet:hover { background: #475569; }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="logo">PRINCESS<span>CASINO</span></div>
     <div class="header-right">
-      <a href="index.html" class="btn-back">Back</a>
       <div class="balance-box">Balance: <span id="balance">1000.00</span> GEMS</div>
+      <a href="index.html" class="btn-back">Back</a>
     </div>
   </header>
 
-  <main class="main">
-    <h1>🎲 Dice</h1>
-    <div class="game-container">
-      <div class="controls">
-        <div class="control-group">
-          <label>Bet Amount</label>
-          <input type="number" id="betAmount" value="10" min="1">
-        </div>
-        <div class="control-group">
-          <label>Mode</label>
-          <div class="toggle-group">
-            <button class="toggle-btn active" id="btnOver" onclick="setMode('over')">Roll Over</button>
-            <button class="toggle-btn" id="btnUnder" onclick="setMode('under')">Roll Under</button>
-          </div>
-        </div>
+  <main class="game-container">
+    <div class="panel">
+      <div class="dice-display" id="diceDisplay">🎲</div>
+      
+      <div class="bet-controls">
+        <input type="number" class="bet-input" id="betAmount" value="10" min="1">
+        <button class="quick-bet" onclick="adjustBet(0.5)">½</button>
+        <button class="quick-bet" onclick="adjustBet(2)">2×</button>
       </div>
+
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btnOver" onclick="setMode('over')">Roll Over</button>
+        <button class="toggle-btn" id="btnUnder" onclick="setMode('under')">Roll Under</button>
+      </div>
+
       <div class="slider-container">
-        <label style="color: #94a3b8;">Target: <span id="targetVal" style="color: white; font-weight: bold;">50.00</span></label>
-        <input type="range" id="targetSlider" min="2" max="98" value="50" step="0.01" oninput="updateStats()">
+        <div class="slider-label">
+          <span>Target: <span id="targetVal" style="color: white; font-weight: bold;">50</span></span>
+          <span id="winChance">Win Chance: 50%</span>
+        </div>
+        <input type="range" id="targetSlider" min="2" max="98" value="50" step="1" oninput="updateStats()">
       </div>
-      <div class="stats">
+
+      <div class="stats-grid">
         <div class="stat-box">
           <div class="stat-label">Multiplier</div>
           <div class="stat-value" id="multiplierVal">1.98x</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Win Chance</div>
-          <div class="stat-value" id="chanceVal">50.00%</div>
+          <div class="stat-label">Payout</div>
+          <div class="stat-value" id="payoutVal">19.80</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Profit on Win</div>
-          <div class="stat-value" id="profitVal" style="color: #4ade80;">9.80</div>
+          <div class="stat-label">Profit</div>
+          <div class="stat-value" id="profitVal" style="color: #22c55e;">9.80</div>
         </div>
       </div>
+
       <button class="btn-roll" id="rollBtn" onclick="rollDice()">Roll Dice</button>
-      <div class="result" id="resultText"></div>
+      <div class="result-display" id="resultText"></div>
     </div>
   </main>
 
@@ -93,18 +111,18 @@
     }
 
     let balance = parseFloat(localStorage.getItem('princessBalance')) || 1000.00;
-    let mode = 'over';
-    const balanceEl = document.getElementById('balance');
-    const targetSlider = document.getElementById('targetSlider');
-    const targetVal = document.getElementById('targetVal');
-    const multiplierVal = document.getElementById('multiplierVal');
-    const chanceVal = document.getElementById('chanceVal');
-    const profitVal = document.getElementById('profitVal');
-    const resultText = document.getElementById('resultText');
-    const rollBtn = document.getElementById('rollBtn');
+    document.getElementById('balance').innerText = balance.toFixed(2);
+    function saveBalance() { localStorage.setItem('princessBalance', balance.toFixed(2)); document.getElementById('balance').innerText = balance.toFixed(2); }
 
-    function updateBalanceDisplay() { balanceEl.innerText = balance.toFixed(2); }
-    function saveBalance() { localStorage.setItem('princessBalance', balance.toFixed(2)); updateBalanceDisplay(); }
+    let mode = 'over';
+    const diceEmojis = ['', '⚁', '', '⚃', '⚄', '⚅'];
+
+    function adjustBet(factor) {
+      playSound('click');
+      const input = document.getElementById('betAmount');
+      input.value = Math.max(1, Math.floor(parseFloat(input.value) * factor));
+      updateStats();
+    }
 
     function setMode(newMode) {
       playSound('click');
@@ -115,49 +133,76 @@
     }
 
     function updateStats() {
-      const target = parseFloat(targetSlider.value);
-      targetVal.innerText = target.toFixed(2);
+      const target = parseInt(document.getElementById('targetSlider').value);
+      const bet = parseFloat(document.getElementById('betAmount').value) || 0;
+      
+      document.getElementById('targetVal').innerText = target;
+      
       let chance = mode === 'over' ? (100 - target) : target;
       let multiplier = 99 / chance;
-      multiplierVal.innerText = multiplier.toFixed(2) + 'x';
-      chanceVal.innerText = chance.toFixed(2) + '%';
-      const bet = parseFloat(document.getElementById('betAmount').value) || 0;
-      profitVal.innerText = (bet * multiplier - bet).toFixed(2);
+      let payout = bet * multiplier;
+      let profit = payout - bet;
+      
+      document.getElementById('multiplierVal').innerText = multiplier.toFixed(2) + 'x';
+      document.getElementById('payoutVal').innerText = payout.toFixed(2);
+      document.getElementById('profitVal').innerText = profit.toFixed(2);
+      document.getElementById('winChance').innerText = `Win Chance: ${chance}%`;
     }
 
     function rollDice() {
       const bet = parseFloat(document.getElementById('betAmount').value);
-      if (bet > balance || bet <= 0) { resultText.innerText = "Invalid bet!"; resultText.className = "result lose"; return; }
+      const target = parseInt(document.getElementById('targetSlider').value);
+      
+      if (bet > balance || bet <= 0) {
+        document.getElementById('resultText').innerText = "Invalid bet!";
+        document.getElementById('resultText').className = "result-display lose";
+        return;
+      }
+
       playSound('click');
-      rollBtn.disabled = true;
       balance -= bet;
       saveBalance();
-      const roll = Math.random() * 100;
-      const target = parseFloat(targetSlider.value);
+      
+      const btn = document.getElementById('rollBtn');
+      const dice = document.getElementById('diceDisplay');
+      const resultText = document.getElementById('resultText');
+      
+      btn.disabled = true;
+      dice.classList.add('rolling');
+      resultText.innerText = "Rolling...";
+      resultText.className = "result-display";
+      
+      // Animate dice
+      let rolls = 0;
+      const rollInterval = setInterval(() => {
+        dice.innerText = diceEmojis[Math.floor(Math.random() * 6)];
+        rolls++;
+        if (rolls > 10) {
+          clearInterval(rollInterval);
+          finishRoll(bet, target);
+        }
+      }, 100);
+    }
+
+    function finishRoll(bet, target) {
+      const roll = Math.floor(Math.random() * 100) + 1; // 1-100
+      const diceNum = Math.floor((roll - 1) / 16.66); // Convert to 0-5 for dice emoji
+      const dice = document.getElementById('diceDisplay');
+      dice.classList.remove('rolling');
+      dice.innerText = diceEmojis[diceNum];
+      
       const chance = mode === 'over' ? (100 - target) : target;
       const multiplier = 99 / chance;
+      
       let won = false;
       if (mode === 'over' && roll > target) won = true;
       if (mode === 'under' && roll < target) won = true;
+      
+      const resultText = document.getElementById('resultText');
+      const btn = document.getElementById('rollBtn');
+      
       if (won) {
         const winAmount = bet * multiplier;
         balance += winAmount;
         saveBalance();
-        playSound('win');
-        resultText.innerText = `Rolled ${roll.toFixed(2)} | Won ${winAmount.toFixed(2)}!`;
-        resultText.className = "result win";
-      } else {
-        playSound('lose');
-        resultText.innerText = `Rolled ${roll.toFixed(2)} | Lost!`;
-        resultText.className = "result lose";
-      }
-      updateBalanceDisplay();
-      rollBtn.disabled = false;
-    }
-
-    document.getElementById('betAmount').addEventListener('input', updateStats);
-    updateStats();
-    updateBalanceDisplay();
-  </script>
-</body>
-</html>
+       
