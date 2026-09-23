@@ -1,2 +1,2 @@
 # Games-by-kash
-Demo casino with virtual money 
+Princess casino
