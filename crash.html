@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Crash | Demo Casino</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f0f0f;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .logo { font-weight: 700; font-size: 18px; }
+    .logo span { color: #00e701; }
+    .balance-box {
+      background: #262626;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .balance-box span { color: #00e701; }
+    .back-btn {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .main {
+      flex: 1;
+      padding: 20px 16px;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .multiplier {
+      font-size: 64px;
+      font-weight: 700;
+      text-align: center;
+      margin: 30px 0 10px;
+      color: #00e701;
+      transition: color 0.1s;
+    }
+    .multiplier.crashed { color: #ff3b3b; }
+    .status {
+      text-align: center;
+      color: #888;
+      margin-bottom: 30px;
+      font-size: 15px;
+    }
+    .bet-section {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .bet-label { color: #888; font-size: 13px; margin-bottom: 8px; }
+    .bet-input {
+      width: 100%;
+      background: #262626;
+      border: 1px solid #333;
+      color: white;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .btn-row { display: flex; gap: 10px; }
+    .btn {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-bet { background: #00e701; color: #000; }
+    .btn-cashout { background: #ffcc00; color: #000; display: none; }
+    .btn:disabled { opacity: 0.5; }
+    .history {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .history-item {
+      background: #1a1a1a;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .history-item.high { color: #00e701; }
+    .history-item.low { color: #ff3b3b; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+    <div class="logo">CRASH</div>
+    <div class="balance-box">$ <span id="balance">1000.00</span></div>
+  </header>
+
+  <main class="main">
+    <div class="multiplier" id="multiplier">1.00x</div>
+    <div class="status" id="status">Place your bet</div>
+
+    <div class="bet-section">
+      <div class="bet-label">Bet Amount</div>
+      <input type="number" class="bet-input" id="betAmount" value="10" min="1">
+      
+      <div class="btn-row">
+        <button class="btn btn-bet" id="betBtn" onclick="placeBet()">Bet</button>
+        <button class="btn btn-cashout" id="cashoutBtn" onclick="cashOut()">Cash Out</button>
+      </div>
+    </div>
+
+    <div class="history" id="history"></div>
+  </main>
+
+  <script>
+    // Balance system
+    const STARTING_BALANCE = 1000;
+    function getBalance() {
+      return parseFloat(localStorage.getItem('demoBalance')) || STARTING_BALANCE;
+    }
+    function setBalance(amount) {
+      localStorage.setItem('demoBalance', amount.toFixed(2));
+      document.getElementById('balance').textContent = amount.toFixed(2);
+    }
+    setBalance(getBalance());
+
+    // Game variables
+    let isPlaying = false;
+    let currentMultiplier = 1.00;
+    let crashPoint = 0;
+    let bet = 0;
+    let interval = null;
+    let history = [];
+
+    function placeBet() {
+      bet = parseFloat(document.getElementById('betAmount').value);
+      if (isNaN(bet) || bet <= 0) return alert('Enter a valid bet');
+      if (bet > getBalance()) return alert('Not enough balance');
+
+      setBalance(getBalance() - bet);
+      isPlaying = true;
+      currentMultiplier = 1.00;
+      crashPoint = generateCrashPoint();
+
+      document.getElementById('betBtn').style.display = 'none';
+      document.getElementById('cashoutBtn').style.display = 'block';
+      document.getElementById('status').textContent = 'Game running...';
+      document.getElementById('multiplier').classList.remove('crashed');
+
+      interval = setInterval(updateMultiplier, 50);
+    }
+
+    function updateMultiplier() {
+      currentMultiplier += 0.01 + (currentMultiplier * 0.001);
+      document.getElementById('multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
+
+      if (currentMultiplier >= crashPoint) {
+        crash();
+      }
+    }
+
+    function cashOut() {
+      if (!isPlaying) return;
+      clearInterval(interval);
+      isPlaying = false;
+
+      const win = bet * currentMultiplier;
+      setBalance(getBalance() + win);
+
+      document.getElementById('status').textContent = `Cashed out at ${currentMultiplier.toFixed(2)}x • Won $${win.toFixed(2)}`;
+      document.getElementById('betBtn').style.display = 'block';
+      document.getElementById('cashoutBtn').style.display = 'none';
+
+      addHistory(currentMultiplier, true);
+    }
+
+    function crash() {
+      clearInterval(interval);
+      isPlaying = false;
+
+      document.getElementById('multiplier').classList.add('crashed');
+      document.getElementById('status').textContent = `Crashed at ${crashPoint.toFixed(2)}x`;
+      document.getElementById('betBtn').style.display = 'block';
+      document.getElementById('cashoutBtn').style.display = 'none';
+
+      addHistory(crashPoint, false);
+    }
+
+    function generateCrashPoint() {
+      // Simple provably fair-ish random crash point
+      const e =
