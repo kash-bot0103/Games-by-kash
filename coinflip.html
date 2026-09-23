@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coinflip | Demo Casino</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #1e293b; border-bottom: 1px solid #334155; }
+    .logo { font-size: 1.5rem; font-weight: 700; } .logo span { color: #3b82f6; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .balance-box { background-color: #334155; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
+    .btn-back { background-color: #475569; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
+    .main { flex: 1; padding: 2rem; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
+    .game-container { background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
+    .controls { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+    .control-group { display: flex; flex-direction: column; text-align: left; }
+    .control-group label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    input { background-color: #0f172a; border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 6px; font-size: 1rem; width: 100px; }
+    
+    /* Coin Animation Styles */
+    .coin-container { perspective: 1000px; width: 150px; height: 150px; margin: 2rem auto; }
+    .coin { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.4, 0.2, 0.2, 1); }
+    .coin.flipping { transform: rotateY(1800deg); }
+    .face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; border: 4px solid #fbbf24; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .heads { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+    .tails { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; transform: rotateY(180deg); }
+
+    .choice-group { display: flex; background: #0f172a; border-radius: 6px; overflow: hidden; border: 1px solid #334155; margin-bottom: 1.5rem; }
+    .choice-btn { flex: 1; padding: 1rem; cursor: pointer; background: transparent; border: none; color: #94a3b8; font-weight: 600; font-size: 1rem; transition: all 0.2s; }
+    .choice-btn.active { background: #3b82f6; color: white; }
+    
+    .btn-flip { background-color: #3b82f6; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.2rem; font-weight: 600; cursor: pointer; width: 100%; }
+    .btn-flip:disabled { background-color: #475569; cursor: not-allowed; }
+    .result { margin-top: 1.5rem; font-size: 1.5rem; font-weight: 700; min-height: 2rem; }
+    .win { color: #4ade80; } .lose { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">DEMO<span>CASINO</span></div>
+    <div class="header-right">
+      <a href="index.html" class="btn-back">Back</a>
+      <div class="balance-box">Balance: <span id="balance">1000.00</span> DEMO</div>
+    </div>
+  </header>
+
+  <main class="main">
+    <h1>🪙 Coinflip</h1>
+    <div class="game-container">
+      
+      <div class="coin-container">
+        <div class="coin" id="coin">
+          <div class="face heads">HEADS</div>
+          <div class="face tails">TAILS</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <label>Bet Amount</label>
+          <input type="number" id="betAmount" value="10" min="1">
+        </div>
+      </div>
+
+      <div class="choice-group">
+        <button class="choice-btn active" id="btnHeads" onclick="setChoice('heads')">Heads</button>
+        <button class="choice-btn" id="btnTails" onclick="setChoice('tails')">Tails</button>
+      </div>
+
+      <button class="btn-flip" id="flipBtn" onclick="flipCoin()">Flip Coin</button>
+      <div class="result" id="resultText"></div>
+    </div>
+  </main>
+
+  <script>
+    let balance = parseFloat(localStorage.getItem('demoBalance')) || 1000.00;
+    let currentChoice = 'heads';
+    const coinEl = document.getElementById('coin');
+    const flipBtn = document.getElementById('flipBtn');
+    const resultText = document.getElementById('resultText');
+    const balanceEl = document.getElementById('balance');
+
+    function updateBalanceDisplay() {
+      balanceEl.innerText = balance.toFixed(2);
+    }
+
+    function saveBalance() {
+      localStorage.setItem('demoBalance', balance.toFixed(2));
+      updateBalanceDisplay();
+    }
+
+    function setChoice(choice) {
+      currentChoice = choice;
+      document.getElementById('btnHeads').className = choice === 'heads' ? 'choice-btn active' : 'choice-btn';
+      document.getElementById('btnTails').className = choice === 'tails' ? 'choice-btn active' : 'choice-btn';
+    }
+
+    function flipCoin() {
+      const bet = parseFloat(document.getElementById('betAmount').value);
+      if (bet > balance || bet <= 0) { 
+        resultText.innerText = "Invalid bet!"; 
+        resultText.className = "result lose"; 
+        return; 
+      }
+
+      balance -= bet;
+      saveBalance();
+      
+      flipBtn.disabled = true;
+      resultText.innerText = "Flipping...";
+      resultText.className = "result";
+      
+      // Reset animation
+      coinEl.classList.remove('flipping');
+      void coinEl.offsetWidth; // Trigger reflow
+      
+      // Determine outcome (50/50)
+      const outcome = Math.random() < 0.5 ? 'heads' : 'tails';
+      
+      // Apply animation
+      // If outcome is tails, we need to rotate an extra 180deg from the base 1800deg
+      const rotation = outcome === 'heads' ? 1800 : 1980;
+      coinEl.style.transform = `rotateY(${rotation}deg)`;
+
+      setTimeout(() => {
+        if (currentChoice === outcome) {
+          const winAmount = bet * 1.98; // 1.98x multiplier (2% house edge)
+          balance += winAmount;
+          saveBalance();
+          resultText.innerText = `It's ${outcome.toUpperCase()}! You won ${winAmount.toFixed(2)} DEMO!`;
+          resultText.className = "result win";
+        } else {
+          resultText.innerText = `It's ${outcome.toUpperCase()}. You lost!`;
+          resultText.className = "result lose";
+        }
+        flipBtn.disabled = false;
+      }, 1500); // Wait for 1.5s animation
+    }
+
+    updateBalanceDisplay();
+  </script>
+</body>
+</html>
