@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dice | Demo Casino</title>
+  <title>Dice | Princess Casino</title>
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #1e293b; border-bottom: 1px solid #334155; }
-    .logo { font-size: 1.5rem; font-weight: 700; } .logo span { color: #3b82f6; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: linear-gradient(90deg, #1e1b4b, #312e81); border-bottom: 2px solid #fbbf24; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #fbbf24; } .logo span { color: #ec4899; }
     .header-right { display: flex; align-items: center; gap: 1rem; }
-    .balance-box { background-color: #334155; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
-    .btn-reset { background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .balance-box { background-color: #1e293b; border: 1px solid #fbbf24; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
     .btn-back { background-color: #475569; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
     .main { flex: 1; padding: 2rem; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
     .game-container { background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
@@ -35,10 +34,10 @@
 </head>
 <body>
   <header class="header">
-    <div class="logo">DEMO<span>CASINO</span></div>
+    <div class="logo">PRINCESS<span>CASINO</span></div>
     <div class="header-right">
       <a href="index.html" class="btn-back">Back</a>
-      <div class="balance-box">Balance: <span id="balance">1000.00</span> DEMO</div>
+      <div class="balance-box">Balance: <span id="balance">1000.00</span> GEMS</div>
     </div>
   </header>
 
@@ -58,12 +57,10 @@
           </div>
         </div>
       </div>
-
       <div class="slider-container">
         <label style="color: #94a3b8;">Target: <span id="targetVal" style="color: white; font-weight: bold;">50.00</span></label>
         <input type="range" id="targetSlider" min="2" max="98" value="50" step="0.01" oninput="updateStats()">
       </div>
-
       <div class="stats">
         <div class="stat-box">
           <div class="stat-label">Multiplier</div>
@@ -78,14 +75,24 @@
           <div class="stat-value" id="profitVal" style="color: #4ade80;">9.80</div>
         </div>
       </div>
-
       <button class="btn-roll" id="rollBtn" onclick="rollDice()">Roll Dice</button>
       <div class="result" id="resultText"></div>
     </div>
   </main>
 
   <script>
-    let balance = parseFloat(localStorage.getItem('demoBalance')) || 1000.00;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
+      else if (type === 'win') { osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
+      else if (type === 'lose') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.15, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
+    }
+
+    let balance = parseFloat(localStorage.getItem('princessBalance')) || 1000.00;
     let mode = 'over';
     const balanceEl = document.getElementById('balance');
     const targetSlider = document.getElementById('targetSlider');
@@ -96,19 +103,11 @@
     const resultText = document.getElementById('resultText');
     const rollBtn = document.getElementById('rollBtn');
 
-    function updateBalanceDisplay() {
-      const balanceEl = document.getElementById('balance');
-      if (balanceEl) {
-        balanceEl.innerText = balance.toFixed(2);
-      }
-    }
-
-    function saveBalance() {
-      localStorage.setItem('demoBalance', balance.toFixed(2));
-      updateBalanceDisplay();
-    }
+    function updateBalanceDisplay() { balanceEl.innerText = balance.toFixed(2); }
+    function saveBalance() { localStorage.setItem('princessBalance', balance.toFixed(2)); updateBalanceDisplay(); }
 
     function setMode(newMode) {
+      playSound('click');
       mode = newMode;
       document.getElementById('btnOver').className = mode === 'over' ? 'toggle-btn active' : 'toggle-btn';
       document.getElementById('btnUnder').className = mode === 'under' ? 'toggle-btn active' : 'toggle-btn';
@@ -118,13 +117,10 @@
     function updateStats() {
       const target = parseFloat(targetSlider.value);
       targetVal.innerText = target.toFixed(2);
-      
       let chance = mode === 'over' ? (100 - target) : target;
       let multiplier = 99 / chance;
-      
       multiplierVal.innerText = multiplier.toFixed(2) + 'x';
       chanceVal.innerText = chance.toFixed(2) + '%';
-      
       const bet = parseFloat(document.getElementById('betAmount').value) || 0;
       profitVal.innerText = (bet * multiplier - bet).toFixed(2);
     }
@@ -132,27 +128,26 @@
     function rollDice() {
       const bet = parseFloat(document.getElementById('betAmount').value);
       if (bet > balance || bet <= 0) { resultText.innerText = "Invalid bet!"; resultText.className = "result lose"; return; }
-      
+      playSound('click');
       rollBtn.disabled = true;
       balance -= bet;
       saveBalance();
-      
       const roll = Math.random() * 100;
       const target = parseFloat(targetSlider.value);
       const chance = mode === 'over' ? (100 - target) : target;
       const multiplier = 99 / chance;
-      
       let won = false;
       if (mode === 'over' && roll > target) won = true;
       if (mode === 'under' && roll < target) won = true;
-      
       if (won) {
         const winAmount = bet * multiplier;
         balance += winAmount;
         saveBalance();
+        playSound('win');
         resultText.innerText = `Rolled ${roll.toFixed(2)} | Won ${winAmount.toFixed(2)}!`;
         resultText.className = "result win";
       } else {
+        playSound('lose');
         resultText.innerText = `Rolled ${roll.toFixed(2)} | Lost!`;
         resultText.className = "result lose";
       }
@@ -164,21 +159,5 @@
     updateStats();
     updateBalanceDisplay();
   </script>
-  <script>
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  function playSound(type) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
-    else if (type === 'win') { osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
-    else if (type === 'lose') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.15, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
-  }
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => playSound('click')));
-  });
-</script>
-
 </body>
 </html>
