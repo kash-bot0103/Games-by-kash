@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dice | Demo Casino</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #1e293b; border-bottom: 1px solid #334155; }
+    .logo { font-size: 1.5rem; font-weight: 700; } .logo span { color: #3b82f6; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .balance-box { background-color: #334155; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
+    .btn-reset { background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+    .btn-back { background-color: #475569; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
+    .main { flex: 1; padding: 2rem; max-width: 600px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
+    .game-container { background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
+    .controls { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+    .control-group { display: flex; flex-direction: column; text-align: left; }
+    .control-group label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    input { background-color: #0f172a; border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 6px; font-size: 1rem; width: 100px;}
+    .slider-container { margin: 2rem 0; }
+    input[type=range] { width: 100%; accent-color: #3b82f6; }
+    .stats { display: flex; justify-content: space-around; margin-bottom: 2rem; background: #0f172a; padding: 1rem; border-radius: 8px; }
+    .stat-box { text-align: center; }
+    .stat-label { font-size: 0.8rem; color: #94a3b8; }
+    .stat-value { font-size: 1.2rem; font-weight: 700; color: #3b82f6; }
+    .btn-roll { background-color: #3b82f6; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.2rem; font-weight: 600; cursor: pointer; width: 100%; }
+    .btn-roll:disabled { background-color: #475569; cursor: not-allowed; }
+    .result { margin-top: 1.5rem; font-size: 1.5rem; font-weight: 700; min-height: 2rem; }
+    .win { color: #4ade80; } .lose { color: #ef4444; }
+    .toggle-group { display: flex; background: #0f172a; border-radius: 6px; overflow: hidden; border: 1px solid #334155; }
+    .toggle-btn { padding: 0.75rem 1.5rem; cursor: pointer; background: transparent; border: none; color: #94a3b8; font-weight: 600;}
+    .toggle-btn.active { background: #3b82f6; color: white; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">DEMO<span>CASINO</span></div>
+    <div class="header-right">
+      <a href="index.html" class="btn-back">Back</a>
+      <div class="balance-box">Balance: <span id="balance">1000.00</span> DEMO</div>
+    </div>
+  </header>
+
+  <main class="main">
+    <h1>🎲 Dice</h1>
+    <div class="game-container">
+      <div class="controls">
+        <div class="control-group">
+          <label>Bet Amount</label>
+          <input type="number" id="betAmount" value="10" min="1">
+        </div>
+        <div class="control-group">
+          <label>Mode</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="btnOver" onclick="setMode('over')">Roll Over</button>
+            <button class="toggle-btn" id="btnUnder" onclick="setMode('under')">Roll Under</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="slider-container">
+        <label style="color: #94a3b8;">Target: <span id="targetVal" style="color: white; font-weight: bold;">50.00</span></label>
+        <input type="range" id="targetSlider" min="2" max="98" value="50" step="0.01" oninput="updateStats()">
+      </div>
+
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">Multiplier</div>
+          <div class="stat-value" id="multiplierVal">1.98x</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Win Chance</div>
+          <div class="stat-value" id="chanceVal">50.00%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Profit on Win</div>
+          <div class="stat-value" id="profitVal" style="color: #4ade80;">9.80</div>
+        </div>
+      </div>
+
+      <button class="btn-roll" id="rollBtn" onclick="rollDice()">Roll Dice</button>
+      <div class="result" id="resultText"></div>
+    </div>
+  </main>
+
+  <script>
+    let balance = 1000.00;
+    let mode = 'over';
+    const balanceEl = document.getElementById('balance');
+    const targetSlider = document.getElementById('targetSlider');
+    const targetVal = document.getElementById('targetVal');
+    const multiplierVal = document.getElementById('multiplierVal');
+    const chanceVal = document.getElementById('chanceVal');
+    const profitVal = document.getElementById('profitVal');
+    const resultText = document.getElementById('resultText');
+    const rollBtn = document.getElementById('rollBtn');
+
+    function updateBalance() { balanceEl.innerText = balance.toFixed(2); }
+
+    function setMode(newMode) {
+      mode = newMode;
+      document.getElementById('btnOver').className = mode === 'over' ? 'toggle-btn active' : 'toggle-btn';
+      document.getElementById('btnUnder').className = mode === 'under' ? 'toggle-btn active' : 'toggle-btn';
+      updateStats();
+    }
+
+    function updateStats() {
+      const target = parseFloat(targetSlider.value);
+      targetVal.innerText = target.toFixed(2);
+      
+      let chance = mode === 'over' ? (100 - target) : target;
+      let multiplier = 99 / chance; // 1% house edge
+      
+      multiplierVal.innerText = multiplier.toFixed(2) + 'x';
+      chanceVal.innerText = chance.toFixed(2) + '%';
+      
+      const bet = parseFloat(document.getElementById('betAmount').value) || 0;
+      profitVal.innerText = (bet * multiplier - bet).toFixed(2);
+    }
+
+    function rollDice() {
+      const bet = parseFloat(document.getElementById('betAmount').value);
+      if (bet > balance || bet <= 0) { resultText.innerText = "Invalid bet!"; resultText.className = "result lose"; return; }
+      
+      rollBtn.disabled = true;
+      balance -= bet;
+      updateBalance();
+      
+      const roll = Math.random() * 100;
+      const target = parseFloat(targetSlider.value);
+      const chance = mode === 'over' ? (100 - target) : target;
+      const multiplier = 99 / chance;
+      
+      let won = false;
+      if (mode === 'over' && roll > target) won = true;
+      if (mode === 'under' && roll < target) won = true;
+      
+      if (won) {
+        const winAmount = bet * multiplier;
+        balance += winAmount;
+        resultText.innerText = `Rolled ${roll.toFixed(2)} | Won ${winAmount.toFixed(2)}!`;
+        resultText.className = "result win";
+      } else {
+        resultText.innerText = `Rolled ${roll.toFixed(2)} | Lost!`;
+        resultText.className = "result lose";
+      }
+      updateBalance();
+      rollBtn.disabled = false;
+    }
+
+    document.getElementById('betAmount').addEventListener('input', updateStats);
+    updateStats();
+  </script>
+</body>
+</html>
