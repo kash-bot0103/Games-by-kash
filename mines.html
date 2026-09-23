@@ -5,50 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mines | Princess Casino</title>
   <style>
+    /* --- STAKE-INSPIRED DARK THEME --- */
     body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: linear-gradient(90deg, #1e1b4b, #312e81); border-bottom: 2px solid #fbbf24; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #1e293b; border-bottom: 1px solid #334155; }
     .logo { font-size: 1.5rem; font-weight: 700; color: #fbbf24; } .logo span { color: #ec4899; }
-    .header-right { display: flex; align-items: center; gap: 1rem; }
-    .balance-box { background-color: #1e293b; border: 1px solid #fbbf24; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; color: #4ade80; }
-    .btn-back { background-color: #475569; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
-    .main { flex: 1; padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
-    .game-container { background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; }
-    .controls { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
-    .control-group { display: flex; flex-direction: column; text-align: left; }
-    .control-group label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; }
-    input, select { background-color: #0f172a; border: 1px solid #334155; color: white; padding: 0.75rem; border-radius: 6px; font-size: 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 400px; margin: 0 auto; }
-    .tile { aspect-ratio: 1; background-color: #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: background 0.2s; }
-    .tile:hover { background-color: #475569; }
-    .tile.gem { background-color: #22c55e; }
-    .tile.mine { background-color: #ef4444; }
-    .tile.disabled { cursor: not-allowed; }
-    .btn-action { background-color: #3b82f6; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; width: 100%; max-width: 400px; }
-    .btn-action:disabled { background-color: #475569; cursor: not-allowed; }
-    .btn-cashout { background-color: #22c55e; }
-    .status { margin-top: 1rem; font-size: 1.2rem; font-weight: 600; min-height: 1.5rem; }
+    .balance-box { background: #0f172a; border: 1px solid #334155; padding: 0.5rem 1rem; border-radius: 6px; color: #4ade80; font-weight: bold; }
+    .btn-back { background: #334155; color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; }
+
+    .game-container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; display: grid; grid-template-columns: 300px 1fr; gap: 1rem; width: 100%; box-sizing: border-box; }
+    
+    /* --- CONTROLS (LEFT SIDE) --- */
+    .controls-panel { background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 1rem; }
+    .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .input-group label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+    .input-wrapper { display: flex; background: #0f172a; border: 1px solid #334155; border-radius: 6px; overflow: hidden; }
+    .input-wrapper input, .input-wrapper select { flex: 1; background: transparent; border: none; color: white; padding: 0.75rem; font-size: 1rem; outline: none; }
+    .input-wrapper button { background: #334155; border: none; color: white; padding: 0 1rem; cursor: pointer; font-weight: bold; }
+    .input-wrapper button:hover { background: #475569; }
+    
+    .btn-bet { width: 100%; padding: 1rem; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+    .btn-bet.green { background: #22c55e; color: white; box-shadow: 0 4px 0 #16a34a; }
+    .btn-bet.green:active { transform: translateY(4px); box-shadow: none; }
+    .btn-bet.orange { background: #f97316; color: white; box-shadow: 0 4px 0 #c2410c; }
+    .btn-bet.orange:active { transform: translateY(4px); box-shadow: none; }
+    .btn-bet:disabled { background: #475569; color: #94a3b8; box-shadow: none; cursor: not-allowed; transform: none; }
+
+    /* --- GAME GRID (RIGHT SIDE) --- */
+    .grid-panel { background: #1e293b; border-radius: 12px; border: 1px solid #334155; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; max-width: 450px; }
+    
+    .tile { 
+      aspect-ratio: 1; 
+      background: linear-gradient(145deg, #2a3b55, #1e293b); 
+      border-radius: 8px; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 2.5rem; 
+      transition: all 0.2s ease; 
+      box-shadow: 0 4px 0 #0f172a;
+      border: 1px solid #334155;
+    }
+    .tile:hover:not(.revealed) { transform: translateY(-2px); background: linear-gradient(145deg, #334155, #2a3b55); }
+    .tile:active:not(.revealed) { transform: translateY(2px); box-shadow: none; }
+    
+    .tile.revealed { cursor: default; transform: scale(0.95); box-shadow: none; }
+    .tile.gem { background: linear-gradient(145deg, #16a34a, #15803d); border-color: #22c55e; box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); animation: pop 0.3s ease; }
+    .tile.mine { background: linear-gradient(145deg, #dc2626, #b91c1c); border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); animation: shake 0.4s ease; }
+    .tile.disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @keyframes pop { 0% { transform: scale(0.5); } 50% { transform: scale(1.1); } 100% { transform: scale(0.95); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+    .status-bar { margin-top: 1.5rem; font-size: 1.2rem; font-weight: 700; min-height: 1.5rem; text-align: center; }
+    .status-bar.win { color: #22c55e; }
+    .status-bar.lose { color: #ef4444; }
+
+    @media (max-width: 768px) {
+      .game-container { grid-template-columns: 1fr; }
+      .controls-panel { order: 2; }
+      .grid-panel { order: 1; padding: 1rem; }
+    }
   </style>
 </head>
 <body>
+
   <header class="header">
     <div class="logo">PRINCESS<span>CASINO</span></div>
     <div class="header-right">
-      <a href="index.html" class="btn-back">Back</a>
       <div class="balance-box">Balance: <span id="balance">1000.00</span> GEMS</div>
+      <a href="index.html" class="btn-back">Back</a>
     </div>
   </header>
 
-  <main class="main">
-    <h1>💣 Mines</h1>
-    <div class="game-container">
-      <div class="controls">
-        <div class="control-group">
-          <label>Bet Amount</label>
-          <input type="number" id="betAmount" value="10" min="1">
+  <main class="game-container">
+    <!-- Left Panel: Controls -->
+    <div class="controls-panel">
+      <div class="input-group">
+        <label>Bet Amount</label>
+        <div class="input-wrapper">
+          <button onclick="adjustBet(0.5)">½</button>
+          <input type="number" id="betAmount" value="10.00" min="1" step="1">
+          <button onclick="adjustBet(2)">2×</button>
         </div>
-        <div class="control-group">
-          <label>Mines (1-24)</label>
-          <select id="mineCount">
+      </div>
+      
+      <div class="input-group">
+        <label>Mines (1-24)</label>
+        <div class="input-wrapper">
+          <select id="mineCount" disabled>
             <option value="1">1 Mine</option>
             <option value="3" selected>3 Mines</option>
             <option value="5">5 Mines</option>
@@ -57,112 +103,23 @@
           </select>
         </div>
       </div>
+
+      <button class="btn-bet green" id="actionBtn" onclick="handleAction()">Bet</button>
+    </div>
+
+    <!-- Right Panel: Grid -->
+    <div class="grid-panel">
       <div class="grid" id="grid"></div>
-      <button class="btn-action" id="actionBtn" onclick="startGame()">Start Game</button>
-      <div class="status" id="status"></div>
+      <div class="status-bar" id="status"></div>
     </div>
   </main>
 
   <script>
+    // --- SOUND & BALANCE SYSTEM ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain); gain.connect(audioCtx.destination);
-      if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
-      else if (type === 'win') { osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4); osc.start(); osc.stop(audioCtx.currentTime + 0.4); }
-      else if (type === 'lose') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.15, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
-    }
-
-    let balance = parseFloat(localStorage.getItem('princessBalance')) || 1000.00;
-    let isPlaying = false;
-    let mines = [];
-    let revealed = 0;
-    let currentBet = 0;
-    let currentMines = 0;
-    const gridEl = document.getElementById('grid');
-    const actionBtn = document.getElementById('actionBtn');
-    const statusEl = document.getElementById('status');
-    const balanceEl = document.getElementById('balance');
-
-    function updateBalanceDisplay() { balanceEl.innerText = balance.toFixed(2); }
-    function saveBalance() { localStorage.setItem('princessBalance', balance.toFixed(2)); updateBalanceDisplay(); }
-
-    function createGrid() {
-      gridEl.innerHTML = '';
-      for (let i = 0; i < 25; i++) {
-        const tile = document.createElement('div');
-        tile.className = 'tile';
-        tile.onclick = () => { playSound('click'); clickTile(i, tile); };
-        gridEl.appendChild(tile);
-      }
-    }
-
-    function startGame() {
-      playSound('click');
-      const bet = parseFloat(document.getElementById('betAmount').value);
-      const mineCount = parseInt(document.getElementById('mineCount').value);
-      if (bet > balance || bet <= 0) { statusEl.innerText = "Invalid bet!"; return; }
-      balance -= bet;
-      saveBalance();
-      currentBet = bet;
-      currentMines = mineCount;
-      isPlaying = true;
-      revealed = 0;
-      statusEl.innerText = `Multiplier: 1.00x`;
-      actionBtn.innerText = "Cash Out";
-      actionBtn.className = "btn-action btn-cashout";
-      mines = Array(25).fill(false);
-      let placed = 0;
-      while (placed < mineCount) { let r = Math.floor(Math.random() * 25); if (!mines[r]) { mines[r] = true; placed++; } }
-      createGrid();
-    }
-
-    function clickTile(index, tile) {
-      if (!isPlaying || tile.classList.contains('disabled')) return;
-      tile.classList.add('disabled');
-      if (mines[index]) {
-        tile.classList.add('mine');
-        tile.innerText = '💣';
-        playSound('lose');
-        endGame(false);
-      } else {
-        tile.classList.add('gem');
-        tile.innerText = '💎';
-        revealed++;
-        let multiplier = 1;
-        for(let i=0; i<revealed; i++) multiplier *= (25 - i) / (25 - currentMines - i);
-        multiplier *= 0.97;
-        statusEl.innerText = `Multiplier: ${multiplier.toFixed(2)}x | Win: ${(currentBet * multiplier).toFixed(2)}`;
-      }
-    }
-
-    function endGame(won) {
-      isPlaying = false;
-      actionBtn.innerText = "Start Game";
-      actionBtn.className = "btn-action";
-      if (won) {
-        let multiplier = 1;
-        for(let i=0; i<revealed; i++) multiplier *= (25 - i) / (25 - currentMines - i);
-        multiplier *= 0.97;
-        let winAmount = currentBet * multiplier;
-        balance += winAmount;
-        saveBalance();
-        playSound('win');
-        statusEl.innerText = `You won ${winAmount.toFixed(2)} GEMS!`;
-        statusEl.style.color = "#4ade80";
-      } else {
-        statusEl.innerText = "You hit a mine! Game Over.";
-        statusEl.style.color = "#ef4444";
-        const tiles = gridEl.children;
-        for(let i=0; i<25; i++) { if (mines[i]) { tiles[i].classList.add('mine'); tiles[i].innerText = '💣'; } }
-      }
-      updateBalanceDisplay();
-    }
-
-    createGrid();
-    updateBalanceDisplay();
-  </script>
-</body>
-</html>
+      if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,
