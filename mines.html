@@ -67,7 +67,7 @@
   </main>
 
   <script>
-    let balance = 1000.00;
+    let balance = parseFloat(localStorage.getItem('demoBalance')) || 1000.00;
     let isPlaying = false;
     let mines = [];
     let revealed = 0;
@@ -78,7 +78,17 @@
     const statusEl = document.getElementById('status');
     const balanceEl = document.getElementById('balance');
 
-    function updateBalance() { balanceEl.innerText = balance.toFixed(2); }
+    function updateBalanceDisplay() {
+      const balanceEl = document.getElementById('balance');
+      if (balanceEl) {
+        balanceEl.innerText = balance.toFixed(2);
+      }
+    }
+
+    function saveBalance() {
+      localStorage.setItem('demoBalance', balance.toFixed(2));
+      updateBalanceDisplay();
+    }
 
     function createGrid() {
       gridEl.innerHTML = '';
@@ -97,7 +107,7 @@
       if (bet > balance || bet <= 0) { statusEl.innerText = "Invalid bet!"; return; }
       
       balance -= bet;
-      updateBalance();
+      saveBalance();
       currentBet = bet;
       currentMines = mineCount;
       isPlaying = true;
@@ -125,11 +135,11 @@
         endGame(false);
       } else {
         tile.classList.add('gem');
-        tile.innerText = '💎';
+        tile.innerText = '';
         revealed++;
         let multiplier = 1;
         for(let i=0; i<revealed; i++) multiplier *= (25 - i) / (25 - currentMines - i);
-        multiplier *= 0.97; // House edge
+        multiplier *= 0.97;
         statusEl.innerText = `Multiplier: ${multiplier.toFixed(2)}x | Win: ${(currentBet * multiplier).toFixed(2)}`;
       }
     }
@@ -145,21 +155,22 @@
         multiplier *= 0.97;
         let winAmount = currentBet * multiplier;
         balance += winAmount;
+        saveBalance();
         statusEl.innerText = `You won ${winAmount.toFixed(2)} DEMO!`;
         statusEl.style.color = "#4ade80";
       } else {
         statusEl.innerText = "You hit a mine! Game Over.";
         statusEl.style.color = "#ef4444";
-        // Reveal all mines
         const tiles = gridEl.children;
         for(let i=0; i<25; i++) {
           if (mines[i]) { tiles[i].classList.add('mine'); tiles[i].innerText = '💣'; }
         }
       }
-      updateBalance();
+      updateBalanceDisplay();
     }
 
     createGrid();
+    updateBalanceDisplay();
   </script>
 </body>
 </html>
